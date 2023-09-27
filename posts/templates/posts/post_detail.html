@@ -1,0 +1,9 @@
+{% block content %}
+    <h1>{{ post.title }}</h1>
+    <i>Written by {{ post.author.username }} on {{ post.publication_date }}</i>
+    {% if post.has_been_edited == True %}
+        <i> Eddited on {{ post.updated_on }} </i>
+    {% endif %}
+    <p>{{ post.content }}</p>
+    <a href="{% url 'posts:post_list' %}"><button type="button">Back</button></a> 
+{% endblock content %}

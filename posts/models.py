@@ -18,3 +18,12 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def has_been_edited(self):
+        return self.publication_date != self.updated_on
+    
+    def get_queryset(self):
+        return Post.objects.filter(status=1)
+
+    class Meta:
+        ordering = ['-publication_date']
