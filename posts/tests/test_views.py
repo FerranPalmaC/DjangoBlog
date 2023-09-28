@@ -21,21 +21,21 @@ class PostTestViews(TestCase):
 
 class PostTestListView(PostTestViews):
 
-    def test_home_page_works_for_authenticated_user(self):
+    def test_authenticated_user_can_access(self):
         self.client.login(username='test_user', password='123') 
         response = self.client.get(reverse('posts:post_list'))
         self.assertEqual(response.status_code, 200)
     
-    def test_home_page_works_for_anonymous_user(self):
+    def test_anonymous_user_can_access(self):
         response = self.client.get(reverse('posts:post_list'))
         self.assertEqual(response.status_code, 200)
     
-    def test_home_page_only_displays_posted_posts(self):
+    def test_only_posted_posts_displayed(self):
         response = self.client.get(reverse('posts:post_list'))
         published_posts = Post.objects.filter(status=1)
         self.assertEqual(list(published_posts), list(response.context['post_list']))
 
-    def test_home_page_orders_posts_by_latest(self):
+    def test_posts_ordered_by_latest(self):
         Post.objects.create(
                 title='First post',
                 publication_date=timezone.now() + datetime.timedelta(days=-10),
@@ -45,4 +45,4 @@ class PostTestListView(PostTestViews):
         response = self.client.get(reverse('posts:post_list'))
         published_ordered_posts = Post.objects.filter(status=1).order_by('-publication_date')
         self.assertEqual(list(published_ordered_posts), list(response.context['post_list']))
-        
+       
