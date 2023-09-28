@@ -11,6 +11,10 @@ class PostDetailView(generic.DetailView):
     model = Post
     template_name = 'posts/post_detail.html'
 
+    def get_queryset(self):
+        # Non published posts don't show detail 
+        return Post.objects.filter(status=1)
+
 class PostCreationView(LoginRequiredMixin, generic.CreateView):
     model = Post
     template_name = 'posts/post_creation.html'
