@@ -1,8 +1,6 @@
-from django.http.response import HttpResponse
-from django.shortcuts import render
 from django.views import generic
 from .models import Post
-# Create your views here.
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class PostListView(generic.ListView):
     model = Post
@@ -13,7 +11,7 @@ class PostDetailView(generic.DetailView):
     model = Post
     template_name = 'posts/post_detail.html'
 
-class PostCreationView(generic.CreateView):
+class PostCreationView(LoginRequiredMixin, generic.CreateView):
     model = Post
     template_name = 'posts/post_creation.html'
     fields = ["title", "author", "content", "status"]
