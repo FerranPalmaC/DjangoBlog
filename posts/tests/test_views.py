@@ -45,4 +45,27 @@ class PostTestListView(PostTestViews):
         response = self.client.get(reverse('posts:post_list'))
         published_ordered_posts = Post.objects.filter(status=1).order_by('-publication_date')
         self.assertEqual(list(published_ordered_posts), list(response.context['post_list']))
-       
+      
+
+#TODO: This has to be tested
+# Drafted posts dont have detail view
+# Published posts have detail view
+# Updated posts have the last upated info
+# Non updated posts dont have last updated info
+# Back button redirects to homepage
+
+class PostTestDetailView(PostTestViews):
+    def test_published_post_has_detail(self):
+        pass
+
+    def test_draft_post_has_not_detail(self):
+        pass
+
+    def test_updated_posts_have_last_updated_info(self):
+        pass
+
+    def test_non_updated_posts_have_not_last_updated_info(self):
+        pass
+
+    def test_back_button_redirects_to_homepage(self):
+        pass
