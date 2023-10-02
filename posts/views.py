@@ -19,3 +19,4 @@ class PostCreationView(LoginRequiredMixin, generic.CreateView):
     model = Post
     template_name = 'posts/post_creation.html'
     fields = ["title", "author", "content", "status"]
+    

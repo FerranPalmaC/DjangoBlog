@@ -28,7 +28,7 @@ class Post(models.Model):
 
     def has_been_edited(self):
         publication_date = self.publication_date.strftime("%Y-%m-%d %H:%M:%S")
-        updated_on = self.publication_date.strftime("%Y-%m-%d %H:%M:%S") 
+        updated_on = self.updated_on.strftime("%Y-%m-%d %H:%M:%S")
         return publication_date != updated_on
 
     def save(self, *args, **kwargs):

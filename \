@@ -5,5 +5,5 @@
         <i> Eddited on {{ post.updated_on }} </i>
     {% endif %}
     <p>{{ post.content }}</p>
-    <a href="{% url 'posts:post_list' %}">Back</a> 
+    <a href="{% url 'posts:post_list' %}"><button type="submit">Back</button></a> 
 {% endblock content %}
