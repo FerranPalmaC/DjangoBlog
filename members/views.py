@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from members.forms import RegistrationForm
 # Create your views here.
 
-def signup(request):
+def register_view(request):
     # User already signed in redirected to homepage
     if request.user.is_authenticated:
         return redirect(reverse('posts:post_list'))
@@ -21,11 +21,11 @@ def signup(request):
             login(request, user)
             return redirect(reverse('posts:post_list'))
         else:
-            return render(request, 'members/signup.html', {'form': form})
+            return render(request, 'members/register.html', {'form': form})
     # Fist time user access signup
     else:
         form = RegistrationForm()
-        return render(request, 'members/signup.html', {'form': form})
+        return render(request, 'members/register.html', {'form': form})
 
 def login_view(request):
     if request.user.is_authenticated:
