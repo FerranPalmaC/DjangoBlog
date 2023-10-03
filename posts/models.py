@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth.models import User
+from members.models import CustomUser
 from django.urls import reverse
 from django.template.defaultfilters import slugify
 from django.utils import timezone
@@ -15,7 +15,7 @@ class Post(models.Model):
     title = models.CharField(max_length=256, unique=True)
     slug = models.SlugField(max_length=200, unique=True, null=False)
     publication_date = models.DateTimeField(editable=False)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='blog_posts')
     content = models.TextField()
     updated_on = models.DateTimeField()
     status = models.IntegerField(choices=STATUS, default=0)

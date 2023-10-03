@@ -31,14 +31,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'members',
+    'posts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'posts',
-    'members',
     'crispy_forms',
     'crispy_bootstrap5',
 ]
@@ -113,6 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL="members.CustomUser"
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

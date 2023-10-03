@@ -1,8 +1,8 @@
-from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
+from members.forms import RegistrationForm
 # Create your views here.
 
 def signup(request):
@@ -12,7 +12,7 @@ def signup(request):
 
     # User submited the form
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
             username = form.cleaned_data.get('username')
@@ -24,7 +24,7 @@ def signup(request):
             return render(request, 'members/signup.html', {'form': form})
     # Fist time user access signup
     else:
-        form = UserCreationForm()
+        form = RegistrationForm()
         return render(request, 'members/signup.html', {'form': form})
 
 def login_view(request):

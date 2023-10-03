@@ -1,5 +1,5 @@
 import datetime 
-from django.contrib.auth.models import User
+from members.models import CustomUser
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -8,7 +8,7 @@ from freezegun import freeze_time
 
 class PostTestViews(TestCase):
     def setUp(self):
-        user = User.objects.create_user(username='test_user', password='123')
+        user = CustomUser.objects.create_user(username='test_user', password='123')
         Post.objects.create(
                 title='Test published post',
                 author=user,
@@ -40,7 +40,7 @@ class PostTestListView(PostTestViews):
         Post.objects.create(
                 title='First post',
                 publication_date=timezone.now() + datetime.timedelta(days=-10),
-                author=User.objects.all()[0],
+                author=CustomUser.objects.all()[0],
                 status=1
                 )
         response = self.client.get(reverse('posts:post_list'))
@@ -83,7 +83,7 @@ class PostTestDetailView(PostTestViews):
     def test_non_updated_posts_have_not_last_updated_info(self):
         non_edited_post = Post.objects.create(
                 title="Hello",
-                author=User.objects.first(),
+                author=CustomUser.objects.first(),
                 status=1
                 )
         url = reverse('posts:post_detail', kwargs={'slug':  non_edited_post.slug})
