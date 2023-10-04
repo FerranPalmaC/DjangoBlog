@@ -16,7 +16,9 @@
                            <a class="nav-link" href="{% url 'posts:post_list'%}">Home</a>
                        </li> 
                        <li class="nav-item">
-                           <a class="nav-link" href="/create_post">Post</a>
+                           {% if user.is_authenticated %}
+                               <a class="nav-link" href="{% url 'posts:post_creation' %}">Post</a>
+                           {% endif %}
                        </li> 
                    </ul> 
                 </div>

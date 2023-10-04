@@ -1,5 +1,4 @@
 from django.http import HttpResponseForbidden
-from django.http.response import HttpResponse
 from django.views import generic
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
