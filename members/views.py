@@ -22,7 +22,8 @@ def register_view(request):
             return redirect(reverse('posts:post_list'))
         else:
             return render(request, 'members/register.html', {'form': form})
-    # Fist time user access signup
+    
+    # User access the endpoint via get request to complete the form 
     else:
         form = RegistrationForm()
         return render(request, 'members/register.html', {'form': form})
@@ -30,7 +31,8 @@ def register_view(request):
 def login_view(request):
     if request.user.is_authenticated:
         return redirect(reverse('posts:post_list'))
-    
+   
+    # User submited the form
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -38,10 +40,12 @@ def login_view(request):
         if user is not None:
             login(request, user)
             return redirect(reverse('posts:post_list'))
+        # Bad credentials, resend the form
         else:
             form = AuthenticationForm(request.POST)
             return render(request, 'members/login.html', {'form': form})
 
+    # User access the endpoint via get request to complete the form 
     else:
         form = AuthenticationForm()
         return render(request, 'members/login.html', {'form': form})
