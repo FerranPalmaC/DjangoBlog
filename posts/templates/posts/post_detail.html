@@ -1,9 +1,24 @@
+{% extends "base.html" %}
+
 {% block content %}
-    <h1>{{ post.title }}</h1>
-    <i>Written by {{ post.author.username }} on {{ post.publication_date }}</i>
-    {% if post.has_been_edited == True %}
-        <i> Eddited on {{ post.updated_on }} </i>
-    {% endif %}
-    <p>{{ post.content }}</p>
-    <a href="{% url 'posts:post_list' %}">Back</a> 
+    <div class="card py-2 px-2 mt-2 mb-3">
+        <div class="card-body">
+            {% block title %} 
+                <h3 class="card-title mb-2">{{ post.title }}</h3>
+            {% endblock %}
+            <div class="card-subtitle mb-4">
+                <h5 class="text-muted">Written by @{{ post.author.username }} on {{ post.publication_date }}</h5>
+                {% if post.has_been_edited == True %}
+                    <h6 class="text-muted"> Last edited on {{ post.updated_on }} </h6>
+                {% endif %}
+            </div>
+            <p class="card-text lh-base">{{ post.content }}</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                {% if post.author == user %}
+                <button type="button" class="btn btn-outline-secondary"><a href="{% url 'posts:post_edition' post.slug %}">Edit</a></button>
+                {% endif %}
+                <button type="button" class="btn btn-outline-dark"><a href="{% url 'posts:post_list' %}">Back</a></button>
+            </div>
+        </div>
+    </div>
 {% endblock content %}

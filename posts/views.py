@@ -1,8 +1,10 @@
+from django.http import HttpResponseForbidden
+from django.http.response import HttpResponse
 from django.views import generic
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import CreatePostForm
-from django.shortcuts import redirect
+from .forms import CreatePostForm, UpdatePostForm
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 
 class PostListView(generic.ListView):
@@ -38,3 +40,16 @@ class PostCreationView(LoginRequiredMixin, generic.CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
+
+class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
+    model = Post
+    template_name = 'posts/post_edition.html'
+    form_class = UpdatePostForm
+
+    # Only the author is allowed to update the post
+    def dispatch(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, slug=self.kwargs['slug'])
+        if post.author == self.request.user:
+            return super().dispatch(request, *args, **kwargs)
+
+        return HttpResponseForbidden("Only the post's author has permission to edit")
