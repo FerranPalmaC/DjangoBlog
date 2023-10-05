@@ -51,4 +51,4 @@ class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
         if post.author == self.request.user:
             return super().dispatch(request, *args, **kwargs)
 
-        return HttpResponseForbidden("Only the post's author has permission to edit")
+        return redirect(reverse('posts:post_list')) 
