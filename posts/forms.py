@@ -2,7 +2,6 @@ from django import forms
 from .models import Post
 
 class CreatePostForm(forms.ModelForm):
-
     class Meta: 
         model = Post
         fields = ["title", "content", "status"]
@@ -10,4 +9,12 @@ class CreatePostForm(forms.ModelForm):
 class UpdatePostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ["content"]
+        fields = ["title", "content", "status"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+        if instance and instance.status == 1:
+            self.fields['title'].widget.attrs['readonly'] = True
+            self.fields['status'].disabled = True
+

@@ -1,4 +1,3 @@
-from django.http import HttpResponseForbidden
 from django.views import generic
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,24 +10,33 @@ class PostListView(generic.ListView):
     template_name = 'posts/post_list.html'
     queryset = Post.objects.filter(status=1).order_by('-publication_date')
    
-    # A post request in this view means a delete action
+    # A post request in this view means a delete or a edit action
     # Only the author of the post can delete the post
-    def post(self):
+    def post(self, request):
         post_id = self.request.POST.get("post_id")
-        post = Post.objects.get(pk=post_id)
-        if post and post.author == self.request.user:
-            post.delete()
+        blog_post = Post.objects.get(pk=post_id)
+        if blog_post and blog_post.author == self.request.user and blog_post.status == 1:
+            blog_post.delete()
+            return redirect(reverse('posts:post_list'))
+        return redirect(reverse('posts:post_edition', kwargs={'slug': blog_post.slug}))
 
-        return redirect(reverse('posts:post_list'))
-         
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            user_drafted_posts = Post.objects.filter(author=self.request.user, status=0)
+            context['draft_posts'] = user_drafted_posts
+        return context
 
 class PostDetailView(generic.DetailView):
     model = Post
     template_name = 'posts/post_detail.html'
 
     def get_queryset(self):
-        # Non published posts don't show detail 
-        return Post.objects.filter(status=1)
+        # Non published posts don't show detail unless you are the author
+        post = get_object_or_404(Post, slug=self.kwargs['slug'])
+        if self.request.user == post.author or post.status == 1:
+            return Post.objects.filter(slug=self.kwargs['slug']) 
+        return Post.objects.none() 
 
 class PostCreationView(LoginRequiredMixin, generic.CreateView):
     model = Post
@@ -37,7 +45,8 @@ class PostCreationView(LoginRequiredMixin, generic.CreateView):
 
     # Auto assign the user creating the post as the author of the post
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        if not Post.objects.get(pk = form.instance.pk):
+            form.instance.author = self.request.user
         return super().form_valid(form)
 
 class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
