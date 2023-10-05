@@ -6,12 +6,12 @@
 {% endblock %}
 
 {% for post in post_list %} 
-    <div class="card mt-2">
+    <div class="card mt-2 mb-3">
         <div class="card-header"><strong>@{{ post.author.username }}</strong></div>
         <div class="card-body d-flex flex-row justify-content-between">
-            <div class="d-block text-truncate">
+            <div class="d-block text-truncate" style="max-height: 150px;">
                 <h5 class="card-title"><a href="{% url 'posts:post_detail' post.slug %}">{{ post.title }}</a></h1>
-                <p class="card-text text-truncate"> {{ post.content }} </p>
+                <p class="card-text text-truncate"> {{ post.content|linebreaks }} </p>
             </div>
         <div>
             {% if user == post.author %}
