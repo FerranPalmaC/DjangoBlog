@@ -36,7 +36,7 @@ class Post(models.Model):
         if not self.pk:
             self.publication_date = timezone.now()
             ''' If there is a Post with the same title, an error must be thrown
-                because elseway two identical urls will be generated '''
+                because elseway two identical slugs (so urls) will be generated '''
             if Post.objects.filter(title=self.title).count() != 0:
                 raise ValidationError("A post with the same title already exists", code="duplicated")
             self.slug = slugify(self.title)
