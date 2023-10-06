@@ -64,6 +64,12 @@ class Comment(models.Model):
     def get_absolute_url(self):
         return reverse('posts:post_detail', kwargs={'slug': self.post.slug})
 
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.publication_date = timezone.now()
+        self.updated_on = timezone.now()
+        super(Comment, self).save(*args, **kwargs)
+
     class Meta:
         ordering = ['-publication_date']
     

@@ -40,8 +40,8 @@ class PostView(View):
     def post(self, request, *args, **kwargs):
         view = CommentCreationView.as_view()
         form = CreateCommentForm(request.POST)
-        form.instance.autor = request.user
-        form.instace.post = Post.objects.get(slug=self.kwargs['slug'])
+        form.instance.author = request.user
+        form.instance.post = Post.objects.get(slug=kwargs['slug'])
         if form.is_valid():
             form.save()
         return view(request, *args, **kwargs)
@@ -74,7 +74,6 @@ class CommentCreationView(SingleObjectMixin, generic.FormView):
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return HttpResponseForbidden
-        self.object = self.get_object()
         return super().post(request, *args, **kwargs)
 
 class PostCreationView(LoginRequiredMixin, generic.CreateView):
@@ -84,7 +83,7 @@ class PostCreationView(LoginRequiredMixin, generic.CreateView):
 
     # Auto assign the user creating the post as the author of the post
     def form_valid(self, form):
-        if not Post.objects.get(pk = form.instance.pk):
+        if not Post.objects.filter(pk = form.instance.pk).exists():
             form.instance.author = self.request.user
         return super().form_valid(form)
 
