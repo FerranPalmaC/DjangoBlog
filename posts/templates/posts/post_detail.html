@@ -35,7 +35,11 @@
                         </div>
                     </div>
                 {% empty %}
-                    <p>No comments yet :(</p>
+                    {% if user.is_authenticated %}
+                        <p>No comments yet :(</p>
+                    {% else %}
+                        <p>No comments yet, <a href={% url 'members:login' %}>login</a>/<a href={% url 'members:register' %}>register</a> to be able to comment!</p>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div> 
