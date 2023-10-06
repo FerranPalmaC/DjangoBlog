@@ -21,6 +21,11 @@
             </div>
         </div>
     </div>
+    <div>
+        {% for comment in post.comments.all %}
+            <p>{{comment.content}}</p>
+        {% endfor %}
+    </div>
     {% if user.is_authenticated %}
     <div>
         <form method="POST">
