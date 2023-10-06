@@ -21,17 +21,35 @@
             </div>
         </div>
     </div>
-    <div>
-        {% for comment in post.comments.all %}
-            <p>{{comment.content}}</p>
-        {% endfor %}
-    </div>
-    {% if user.is_authenticated %}
-    <div>
-        <form method="POST">
-            {% csrf_token %}{{ comment_form|crispy }} 
-            <button type="submit" class="btn btn-success">Add a comment</button>
-        </form>
-    </div>
-    {% endif %}
+       <div class="card mt-4">
+            <div class="card-header">
+                <h4>Comments</h4>
+            </div>
+            <div class="card-body">
+                {% for comment in post.comments.all %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <small class="card-title fw-bold">@{{ comment.author.username }} commented:</small>
+                            <p class="card-text">{{ comment.content }}</p>
+                            <small class="mb-2 text-muted">{{ comment.publication_date }}</small>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No comments yet.</p>
+                {% endfor %}
+            </div>
+        </div> 
+        {% if user.is_authenticated %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4>Add a Comment</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}{{ comment_form|crispy }} 
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
 {% endblock content %}

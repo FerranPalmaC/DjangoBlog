@@ -6,8 +6,8 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ('status', 'author')
 
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('author', 'post', 'publication_date', 'active')
-    list_filter = ('author', 'post', 'active')
+    list_display = ('author', 'post', 'publication_date',)
+    list_filter = ('author', 'post',)
     
 
 admin.site.register(Post, PostAdmin)

@@ -23,8 +23,20 @@
             {% endif %}
         </div>
         </div>
-        <div class="card-footer">
-            <small class="text-muted">{{ post.publication_date }}</small>
+        <div class="card-footer d-flex flex-row justify-content-between">
+            <div class="d-block">
+                <small class="text-muted">{{ post.publication_date }}</small>
+            </div>
+            <div>
+                {% if post.comments.count == 0 %}
+                    <small class="text-muted">No comments yet</small>
+                {% elif post.comments.count == 1 %}
+                    <small class="text-muted">{{ post.comments.count }} comment </small>
+                {% else %}
+                    <small class="text-muted">{{ post.comments.count }} comments </small>
+                {% endif %}
+            </div>
+
         </div>
     </div>
 {% empty %}
