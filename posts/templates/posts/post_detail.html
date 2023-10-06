@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% load crispy_forms_tags %}{% block content %}
     <div class="card py-2 px-2 mt-2 mb-3">
         <div class="card-body">
             {% block title %} 
@@ -21,4 +21,12 @@
             </div>
         </div>
     </div>
+    {% if user.is_authenticated %}
+    <div>
+        <form method="POST">
+            {% csrf_token %}{{ comment_form|crispy }} 
+            <button type="submit" class="btn btn-success">Add a comment</button>
+        </form>
+    </div>
+    {% endif %}
 {% endblock content %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Post
+from .models import Comment, Post
 
 class CreatePostForm(forms.ModelForm):
     class Meta: 
@@ -18,3 +18,9 @@ class UpdatePostForm(forms.ModelForm):
             self.fields['title'].widget.attrs['readonly'] = True
             self.fields['status'].disabled = True
 
+class CreateCommentForm(forms.ModelForm):
+    content = forms.CharField(required=True)
+    
+    class Meta:
+        model = Comment
+        fields = ['content',]
