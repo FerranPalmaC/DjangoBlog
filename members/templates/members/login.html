@@ -1,10 +1,21 @@
 {% extends 'base.html' %} 
 {% load crispy_forms_tags %}  {% block content %}
-{% block title %} <h1>Login</h1> {% endblock %}
-<form method="POST">
-    {% csrf_token %}{{ form|crispy }} 
-    <p>Don't have an account? Create one <a href="{% url 'members:register' %}">here</a>!</p>
-    <button type="submit" class="btn btn-success">Login</button>
-</form>
+
+<div class="card mt-3 mb-1">
+    <div class="card-header"> Login 
+    </div>
+    <div class="card-body flex-row">
+    <form method="POST">
+        {% csrf_token %}{{ form|crispy }} 
+        <div class="flex-row justify-content-between">
+            <p>
+            Don't have an account? Create one 
+            <a href="{% url 'members:register' %}">here</a>! 
+            </p>
+            <button type="submit" class="btn btn-success">Login</button>
+        </div>
+    </form>
+    </div>
+</div>
 
 {% endblock %}
