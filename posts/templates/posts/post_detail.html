@@ -3,57 +3,61 @@
 {% load crispy_forms_tags %}{% block content %}
     <div class="card py-2 px-2 mt-3 mb-3">
         <div class="card-body">
-            {% block title %} 
-                <h3 class="card-title mb-2">{{ post.title }}</h3>
-            {% endblock %}
-            <div class="card-subtitle mb-4">
+            <div class="d-grid gap-2 d-md-flex justify-content-between">
+                {% block title %} 
+                    <h3 class="card-title mb-2">{{ post.title }}</h3>
+                {% endblock %}
+                <div class="d-grid gap-2 d-md-flex justify-content-end">
+                    {% if post.author == user %}
+                    <button type="button" class="btn btn-custom-secondary"><a class="btn-link-text" href="{% url 'posts:post_edition' post.slug %}">Edit</a></button>
+                    {% endif %}
+                    <button type="button" class="btn btn-custom-primary"><a class="btn-link-text" href="{% url 'posts:post_list' %}">Back</a></button>
+                </div>
+            </div>
+            <div class="card-subtitle mb-4 d-grid gap-2 d-md-flex justify-content-between">
+                <div>
                 <h5 class="text-muted">Written by @{{ post.author.username }} on {{ post.publication_date }}</h5>
                 {% if post.has_been_edited == True %}
                     <h6 class="text-muted"> Last edited on {{ post.updated_on }} </h6>
                 {% endif %}
+                </div>
             </div>
             <p class="card-text lh-base">{{ post.content|linebreaks }}</p>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                {% if post.author == user %}
-                <button type="button" class="btn btn-outline-secondary"><a href="{% url 'posts:post_edition' post.slug %}">Edit</a></button>
-                {% endif %}
-                <button type="button" class="btn btn-outline-dark"><a href="{% url 'posts:post_list' %}">Back</a></button>
-            </div>
         </div>
     </div>
-       <div class="card mt-4 mb-5">
+   <div class="card mt-4 mb-4">
+        <div class="card-header">
+            <h4>Comments</h4>
+        </div>
+        <div class="card-body">
+            {% for comment in post.comments.all %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <small class="card-title fw-bold">@{{ comment.author.username }} commented:</small>
+                        <p class="card-text">{{ comment.content }}</p>
+                        <small class="mb-2 text-muted">{{ comment.publication_date }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                {% if user.is_authenticated %}
+                    <p>No comments yet :(</p>
+                {% else %}
+                    <p>No comments yet, <a href={% url 'members:login' %}>login</a>/<a href={% url 'members:register' %}>register</a> to be able to comment!</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div> 
+    {% if user.is_authenticated %}
+        <div class="card mt-4 mb-4">
             <div class="card-header">
-                <h4>Comments</h4>
+                <h4>Add a Comment</h4>
             </div>
             <div class="card-body">
-                {% for comment in post.comments.all %}
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <small class="card-title fw-bold">@{{ comment.author.username }} commented:</small>
-                            <p class="card-text">{{ comment.content }}</p>
-                            <small class="mb-2 text-muted">{{ comment.publication_date }}</small>
-                        </div>
-                    </div>
-                {% empty %}
-                    {% if user.is_authenticated %}
-                        <p>No comments yet :(</p>
-                    {% else %}
-                        <p>No comments yet, <a href={% url 'members:login' %}>login</a>/<a href={% url 'members:register' %}>register</a> to be able to comment!</p>
-                    {% endif %}
-                {% endfor %}
+                <form method="POST">
+                    {% csrf_token %}{{ comment_form|crispy }} 
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </form>
             </div>
-        </div> 
-        {% if user.is_authenticated %}
-            <div class="card mt-4 mb-5">
-                <div class="card-header">
-                    <h4>Add a Comment</h4>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {% csrf_token %}{{ comment_form|crispy }} 
-                        <button type="submit" class="btn btn-success">Submit</button>
-                    </form>
-                </div>
-            </div>
-        {% endif %}
+        </div>
+    {% endif %}
 {% endblock content %}

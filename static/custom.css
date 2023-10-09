@@ -1,0 +1,56 @@
+:root {
+    --custom-primary-color: #14213D; /* Dark blue */
+    --custom-secondary-color: #FCA311; /* Orange */
+    --custom-text-color: #000000; /* Black */
+    --custom-background-color: #E5E5E5; /* Light gray */
+    --custom-link-color: #FFFFFF; /* White */
+}
+
+.navbar {
+    background-color: var(--custom-primary-color);
+}
+
+/* Navbar link text color */
+.nav-link {
+    color: var(--custom-link-color);
+}
+/* Custom primary button */
+.btn-custom-primary {
+    background-color: var(--custom-primary-color);
+    border-color: var(--custom-primary-color);
+    color: var(--custom-link-color);
+}
+
+.btn-custom-secondary {
+    background-color: var(--custom-secondary-color);
+    border-color: var(--custom-secondary-color);
+    color: var(--custom-link-color);
+}
+
+.btn-custom-primary:hover, .btn-custom-secondary:hover {
+    opacity: 0.75;
+}
+
+.btn-success {
+    margin-left: auto;
+    margin-right: 0;
+    display: block;
+}
+
+.btn-link-text {
+    color: var(--custom-link-color);
+    text-decoration: none;
+}
+
+.btn-link-text:hover {
+    color: var(--custom-link-color);
+}
+
+.card-header {
+    background-color: var(--custom-secondary-color);
+}
+
+body {
+    background-color: var(--custom-background-color);
+}
+

@@ -2,11 +2,19 @@
 
 {% extends 'base.html' %} 
 {% load crispy_forms_tags %}  {% block content %}
-{% block title %} <h1>Edit: {{ post.title }}</h1> {% endblock %}
-<form method="POST">
-    {% csrf_token %}{{ form|crispy }} 
-    <button type="submit" class="btn btn-success">Save post</button>
-</form>
+
+<div class="card mt-3 mb-3">
+    <div class="card-header">
+        <strong>
+            {% block title %} Edit: {{ post.title }} {% endblock %}
+        </strong>
+    </div>
+    <div class="card-body flex-row justify-content-between">
+    <form method="POST">
+        {% csrf_token %}{{ form|crispy }} 
+        <button type="submit" class="btn btn-success">Save post</button>
+    </form>
+    </div>
+</div>
 
 {% endblock %}
-
