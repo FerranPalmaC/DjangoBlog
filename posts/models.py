@@ -14,6 +14,7 @@ STATUS = (
 class Post(models.Model):
     title = models.CharField(max_length=256, unique=True)
     slug = models.SlugField(max_length=200, unique=True, null=False)
+    creation_date = models.DateTimeField(editable=False)
     publication_date = models.DateTimeField(editable=False)
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='blog_posts')
     content = models.TextField()
@@ -27,6 +28,10 @@ class Post(models.Model):
         return reverse('posts:post_detail', kwargs={'slug': self.slug})
 
     def has_been_edited(self):
+        # Drafted posts can't be eddited by definition 
+        if self.status == 0:
+            return False 
+
         publication_date = self.publication_date.strftime("%Y-%m-%d %H:%M:%S")
         updated_on = self.updated_on.strftime("%Y-%m-%d %H:%M:%S")
         return publication_date != updated_on
@@ -34,14 +39,21 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         ''' Only generate a new slug if the post doesn't already exist and update timestamp on save '''
         if not self.pk:
-            self.publication_date = timezone.now()
+            self.creation_date = timezone.now()
             ''' If there is a Post with the same title, an error must be thrown
                 because elseway two identical slugs (so urls) will be generated '''
             if Post.objects.filter(title=self.title).count() != 0:
                 raise ValidationError("A post with the same title already exists", code="duplicated")
             self.slug = slugify(self.title)
+        
+        # Publication date only added when post is published
+        if not self.publication_date and self.status == 1:
+            self.publication_date = timezone.now()
+       
+        # A post can only be eddited if is published
+        if self.publication_date:
+            self.updated_on = timezone.now()
 
-        self.updated_on = timezone.now()
         super(Post, self).save(*args, **kwargs)
     
     class Meta:
