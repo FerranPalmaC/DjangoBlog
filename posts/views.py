@@ -17,7 +17,7 @@ class PostListView(generic.ListView):
     def post(self, request):
         post_id = self.request.POST.get("post_id")
         blog_post = Post.objects.get(pk=post_id)
-        if blog_post and blog_post.author == self.request.user and blog_post.status == 1:
+        if blog_post and blog_post.author == request.user and blog_post.status == 1:
             blog_post.delete()
             return redirect(reverse('posts:post_list'))
         return redirect(reverse('posts:post_edition', kwargs={'slug': blog_post.slug}))

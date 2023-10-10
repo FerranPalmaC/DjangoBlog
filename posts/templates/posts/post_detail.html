@@ -9,9 +9,9 @@
                 {% endblock %}
                 <div class="d-grid gap-2 d-md-flex justify-content-end">
                     {% if post.author == user %}
-                    <button type="button" class="btn btn-custom-secondary"><a class="btn-link-text" href="{% url 'posts:post_edition' post.slug %}">Edit</a></button>
+                    <a class="btn-link-text" href="{% url 'posts:post_edition' post.slug %}"><button type="button" class="btn btn-custom-secondary">Edit</button></a>
                     {% endif %}
-                    <button type="button" class="btn btn-custom-primary"><a class="btn-link-text" href="{% url 'posts:post_list' %}">Back</a></button>
+                    <a class="btn-link-text" href="{% url 'posts:post_list' %}"><button type="button" class="btn btn-custom-primary">Back</button></a>
                 </div>
             </div>
             <div class="card-subtitle mb-4 d-grid gap-2 d-md-flex justify-content-between">
@@ -57,6 +57,15 @@
                     {% csrf_token %}{{ comment_form|crispy }} 
                     <button type="submit" class="btn btn-success">Submit</button>
                 </form>
+            </div>
+        </div>
+    {% elif post.comments.all|length > 0 %}
+        <div class="card mt-4 mb-4">
+            <div class="card-header">
+                <h4>Add a Comment</h4>
+            </div>
+            <div class="card-body">
+                <p>Want to share your impressions? <a href={% url 'members:login' %}>Login</a>/<a href={% url 'members:register' %}>register</a> to be able to comment!</p>
             </div>
         </div>
     {% endif %}
