@@ -6,8 +6,7 @@ from django.utils import timezone
 from posts.tests.factories import PostFactory
 from members.tests.factories import CustomUserFactory
 
-class TestPostModel(TestCase):
-
+class TestPostsAppModels(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -35,6 +34,8 @@ class TestPostModel(TestCase):
                 updated_on = timezone.now() + datetime.timedelta(days=3),
                 status=1
                 )
+
+class TestPostModel(TestPostsAppModels):
 
     def test_str_method(self):
         post = PostFactory() 
