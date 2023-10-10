@@ -34,7 +34,15 @@
             {% for comment in post.comments.all %}
                 <div class="card mb-3">
                     <div class="card-body">
-                        <small class="card-title fw-bold">@{{ comment.author.username }} commented:</small>
+                        <div class="d-grid gap-2 d-md-flex justify-content-between">
+                            <small class="card-title fw-bold">@{{ comment.author.username }} commented:</small>
+                            {% if user == post.author or user == comment.author %}
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger" name="comment_id" value="{{comment.id}}">Delete</button>
+                                </form>
+                            {% endif %}
+                        </div>
                         <p class="card-text">{{ comment.content }}</p>
                         <small class="mb-2 text-muted">{{ comment.publication_date }}</small>
                     </div>
