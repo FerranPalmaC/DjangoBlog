@@ -64,7 +64,7 @@
             <div class="card-body">
                 <form method="POST">
                     {% csrf_token %}{{ comment_form|crispy }} 
-                    <button type="submit" class="btn btn-success">Submit</button>
+                    <button type="submit" class="btn btn-success" name="new_comment">Submit</button>
                 </form>
             </div>
         </div>
