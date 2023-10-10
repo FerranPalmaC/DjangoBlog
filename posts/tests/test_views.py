@@ -46,6 +46,10 @@ class TestPostsAppViews(TestCase):
                 author=cls.visitor_user,
                 post=cls.published_post
                 )
+        cls.author_comment_post = CommentFactory(
+                author=cls.main_user,
+                post=cls.published_post
+                )
 
 class TestPostListView(TestPostsAppViews):
     
