@@ -50,8 +50,8 @@ class Post(models.Model):
         if not self.publication_date and self.status == 1:
             self.publication_date = timezone.now()
        
-        # A post can only be eddited if is published
-        if self.publication_date:
+        # A post can only be eddited if is published 
+        if self.status == 1:
             self.updated_on = timezone.now()
 
         super(Post, self).save(*args, **kwargs)
