@@ -1,5 +1,6 @@
 import datetime
 from django.core.exceptions import ValidationError
+from django.db.utils import DataError
 from django.template.defaultfilters import slugify
 from django.test import Client, TestCase
 from django.utils import timezone
@@ -63,6 +64,10 @@ class TestPostModel(TestPostsAppModels):
         auto_slug_post = PostFactory(title=title)
         self.assertEqual(slugify(title), auto_slug_post.slug)
 
+    def test_title_cant_be_longer_than_256_characters(self):
+        title = "x" * 257
+        with self.assertRaises(DataError):
+           PostFactory(title=title) 
    
 class TestCommentModel(TestPostsAppModels):
       

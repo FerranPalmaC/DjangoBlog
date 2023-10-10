@@ -13,7 +13,7 @@ STATUS = (
 
 class Post(models.Model):
     title = models.CharField(max_length=256, unique=True)
-    slug = models.SlugField(max_length=200, unique=True, null=False)
+    slug = models.SlugField(max_length=512, unique=True, null=False)
     creation_date = models.DateTimeField(editable=False)
     publication_date = models.DateTimeField(editable=False)
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='blog_posts')
