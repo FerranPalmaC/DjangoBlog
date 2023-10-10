@@ -25,6 +25,7 @@
             <p class="card-text lh-base">{{ post.content|linebreaks }}</p>
         </div>
     </div>
+    {% if post.status == 1 %}
    <div class="card mt-4 mb-4">
         <div class="card-header">
             <h4>Comments</h4>
@@ -69,4 +70,5 @@
             </div>
         </div>
     {% endif %}
+{% endif %}
 {% endblock content %}

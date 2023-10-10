@@ -5,7 +5,7 @@ from .models import Comment, Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import CreateCommentForm, CreatePostForm, UpdatePostForm
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 class PostListView(generic.ListView):
     model = Post
@@ -60,11 +60,12 @@ class PostDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['comment_form'] = CreateCommentForm()
+        # When creating a drafted post, it can't be commented
+        if context['post'].status == 1:
+            context['comment_form'] = CreateCommentForm()
         return context
 
 class CommentCreationView(SingleObjectMixin, generic.FormView):
-    template_name = 'posts/post_detail.html'
     form_class = CreateCommentForm
     model = Comment
     # So the form stays in the same page
