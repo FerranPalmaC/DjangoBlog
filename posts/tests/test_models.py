@@ -1,0 +1,59 @@
+import datetime
+from django.core.exceptions import ValidationError
+from django.template.defaultfilters import slugify
+from django.test import Client, TestCase
+from django.utils import timezone
+from posts.tests.factories import PostFactory
+from members.tests.factories import CustomUserFactory
+
+class TestPostModel(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        # Set up users
+        cls.main_user = CustomUserFactory()
+        cls.visitor_user = CustomUserFactory()
+        cls.anonymous_user = CustomUserFactory()
+        cls.client.login(username=cls.main_user.username, password=cls.main_user.password)
+        cls.client.login(username=cls.visitor_user.username, password=cls.visitor_user.password)
+        # Set up posts
+        cls.published_post = PostFactory(
+                creation_date = timezone.now(),
+                publication_date = timezone.now(),
+                updated_on = timezone.now(),
+                status=1)
+
+        cls.drafted_post= PostFactory(
+                creation_date=timezone.now() - datetime.timedelta(days=2), 
+                publication_date=timezone.now() - datetime.timedelta(days=1), 
+                updated_on = timezone.now() + datetime.timedelta(days=3)
+                )
+        cls.edited_post = PostFactory(
+                creation_date=timezone.now() - datetime.timedelta(days=2), 
+                publication_date=timezone.now() - datetime.timedelta(days=1), 
+                updated_on = timezone.now() + datetime.timedelta(days=3),
+                status=1
+                )
+
+    def test_str_method(self):
+        post = PostFactory() 
+        self.assertEqual(post.title, str(post))
+
+    def test_has_been_edited(self):
+        self.assertTrue(self.edited_post.has_been_edited())
+        self.assertFalse(self.published_post.has_been_edited())
+        # Drafted posts cant be edited 
+        self.assertFalse(self.drafted_post.has_been_edited())
+
+    def test_two_posts_with_same_title_fail(self):
+        with self.assertRaises(ValidationError):
+            repeated_post = PostFactory(title=self.published_post.title)
+
+    def test_slug_automatically_created(self):
+        title = "This is a test title"
+        auto_slug_post = PostFactory(title=title)
+        self.assertEqual(slugify(title), auto_slug_post.slug)
+
+    
+       
