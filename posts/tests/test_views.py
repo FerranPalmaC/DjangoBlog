@@ -3,17 +3,22 @@ from django.test import Client, TestCase
 from django.utils import timezone
 from posts.tests.factories import CommentFactory, PostFactory
 from members.tests.factories import CustomUserFactory
+from django.urls import reverse
+from posts.models import Post, Comment
+
 
 class TestPostsAppViews(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.client = Client()
+        cls.main_client = Client()
+        cls.visitor_client = Client()
+        cls.anonymous_client = Client()
         # Set up users
         cls.main_user = CustomUserFactory()
         cls.visitor_user = CustomUserFactory()
         cls.anonymous_user = CustomUserFactory()
-        cls.client.login(username=cls.main_user.username, password=cls.main_user.password)
-        cls.client.login(username=cls.visitor_user.username, password=cls.visitor_user.password)
+        cls.main_client.force_login(cls.main_user)
+        cls.visitor_client.force_login(cls.visitor_user)
         # Set up posts
         cls.published_post = PostFactory(
                 author = cls.main_user,
@@ -27,7 +32,9 @@ class TestPostsAppViews(TestCase):
                 publication_date = timezone.now()- datetime.timedelta(days=-3),
                 updated_on = timezone.now(),
                 status=1)
-
+        cls.post_to_delete = PostFactory(
+                author = cls.main_user,
+                status=1)
         cls.drafted_post= PostFactory(
                 author = cls.main_user,
                 creation_date=timezone.now() - datetime.timedelta(days=2), 
@@ -50,35 +57,78 @@ class TestPostsAppViews(TestCase):
                 author=cls.main_user,
                 post=cls.published_post
                 )
+        cls.old_comment = CommentFactory(
+                author=cls.visitor_user,
+                post=cls.old_published_post
+                )
+        # Get querysets
+        cls.qs_published_posts = Post.objects.filter(status=1).order_by('-publication_date')
+        cls.qs_drafted_posts = Post.objects.filter(author=cls.main_user, status=0)
 
 class TestPostListView(TestPostsAppViews):
     
     def test_only_published_posts_are_shown_for_authenticated_user(self):
-        pass
+        response = self.main_client.get(reverse('posts:post_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context["post_list"], self.qs_published_posts)
+        response = self.visitor_client.get(reverse('posts:post_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context["post_list"], self.qs_published_posts)
 
     def test_only_published_posts_are_shown_for_anonymous_user(self):
-        pass
+        response = self.anonymous_client.get(reverse('posts:post_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context["post_list"], self.qs_published_posts)
 
     def test_post_author_can_see_drafted_posts(self):
-        pass
+        response = self.main_client.get(reverse('posts:post_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context["draft_posts"], self.qs_drafted_posts)
+
+    def test_not_post_author_cant_see_drafted_posts(self):
+        response = self.visitor_client.get(reverse('posts:post_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["draft_posts"].count(), 0)
 
     def test_posts_ordered_from_newest_to_oldest(self):
-        pass
+        response = self.main_client.get(reverse('posts:post_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['post_list'], self.qs_published_posts)
 
     def test_authenticated_user_has_create_post_button(self):
-        pass
+        response = self.main_client.post(reverse('posts:post_list'))
+        self.assertRedirects(response, reverse('posts:post_creation'))
 
-    def test_anonymous_user_hasnt_create_button(self):
-        pass
+    def test_anonymous_user_hasnt_create_post_button(self):
+        response = self.anonymous_client.post(reverse('posts:post_list'))
+        self.assertTrue(response.status_code, 401)
 
-    def test_zero_comments_show_message(self):
-        pass
+    def test_authenticated_author_has_delete_post_button(self):
+        response = self.main_client.post(reverse('posts:post_list'), {'post_id': self.post_to_delete.pk})
+        self.assertRedirects(response, reverse('posts:post_list'))
+        self.assertFalse(Post.objects.filter(pk=self.post_to_delete.pk).exists())
 
-    def test_one_comment_show_message(self):
-        pass
+    def test_authenticated_user_has_not_delete_post_button(self):
+        response = self.visitor_client.post(reverse('posts:post_list'), {'post_id': self.old_published_post.pk})
+        self.assertTrue(response.status_code, 403)
+        self.assertTrue(Post.objects.filter(pk=self.old_published_post.pk).exists())
 
-    def test_multiple_comments_show_message(self):
-        pass
+    def test_anonymous_user_has_not_delete_post_button(self):
+        response = self.anonymous_client.post(reverse('posts:post_list'), {'post_id': self.old_published_post.pk})
+        self.assertTrue(response.status_code, 401)
+
+    def test_authenticated_author_has_edit_drafted_post_button(self):
+        response = self.main_client.post(reverse('posts:post_list'), {'post_id': self.drafted_post.pk})
+        self.assertRedirects(response, reverse('posts:post_edition', kwargs={'slug': self.drafted_post.slug}))
+
+    def test_authenticated_user_hasnt_edit_drafted_post_button(self):
+        response = self.visitor_client.post(reverse('posts:post_list'), {'post_id': self.drafted_post.pk})
+        self.assertTrue(response.status_code, 403)
+
+    def test_anonymous_user_hasnt_edit_drafted_post_button(self):
+        response = self.anonymous_client.post(reverse('posts:post_list'), {'post_id': self.drafted_post.pk})
+        self.assertTrue(response.status_code, 401)
+
 
 class TestPostDetailView(TestPostsAppViews):
     
