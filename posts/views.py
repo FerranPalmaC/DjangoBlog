@@ -1,11 +1,12 @@
 from django.http import HttpResponseForbidden
+from django.http.response import Http404, HttpResponseNotAllowed
 from django.views import View, generic
 from django.views.generic.detail import SingleObjectMixin
 from .models import Comment, Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import CreateCommentForm, CreatePostForm, UpdatePostForm
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 
 class PostListView(generic.ListView):
     model = Post
@@ -15,12 +16,22 @@ class PostListView(generic.ListView):
     # A post request in this view means a delete or a edit action
     # Only the author of the post can delete the post
     def post(self, request):
+        if not request.user.is_authenticated:
+            return redirect(reverse('members:login'))
+        # User wants to create a post 
         post_id = self.request.POST.get("post_id")
+        if not post_id:
+            return redirect(reverse('posts:post_creation'))
+        
         blog_post = Post.objects.get(pk=post_id)
-        if blog_post and blog_post.author == request.user and blog_post.status == 1:
-            blog_post.delete()
-            return redirect(reverse('posts:post_list'))
-        return redirect(reverse('posts:post_edition', kwargs={'slug': blog_post.slug}))
+        if blog_post:
+            if blog_post.status == 1 and blog_post.author == request.user:
+                blog_post.delete()
+                return redirect(reverse('posts:post_list'))
+            if blog_post.status == 0 and blog_post.author == request.user:
+                return redirect(reverse('posts:post_edition', kwargs={'slug': blog_post.slug}))
+        
+        return Http404()
 
     # If the user has drafted posts, he can also see them in the post list view
     def get_context_data(self, **kwargs):
