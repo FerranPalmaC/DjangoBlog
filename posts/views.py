@@ -1,5 +1,5 @@
 from django.http import HttpResponseForbidden
-from django.http.response import Http404, HttpResponseNotAllowed
+from django.http.response import Http404, HttpResponse, HttpResponseNotAllowed
 from django.views import View, generic
 from django.views.generic.detail import SingleObjectMixin
 from .models import Comment, Post
@@ -16,7 +16,7 @@ class PostListView(generic.ListView):
     # A post request in this view means: create, delete or edit a post 
     def post(self, request):
         if not request.user.is_authenticated:
-            return redirect(reverse('members:login'))
+            return HttpResponse('Unauthorized', status=401)  
         post_id = self.request.POST.get("post_id")
         
         # User wants to create a post 
@@ -34,7 +34,7 @@ class PostListView(generic.ListView):
             if blog_post.status == 0 and blog_post.author == request.user:
                 return redirect(reverse('posts:post_edition', kwargs={'slug': blog_post.slug}))
         
-        return Http404()
+        return HttpResponse('Forbidden', status=403) 
 
     # If the user has drafted posts, he can also see them in the post list view
     def get_context_data(self, **kwargs):
