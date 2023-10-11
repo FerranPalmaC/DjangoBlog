@@ -13,21 +13,24 @@ class PostListView(generic.ListView):
     template_name = 'posts/post_list.html'
     queryset = Post.objects.filter(status=1).order_by('-publication_date')
    
-    # A post request in this view means a delete or a edit action
-    # Only the author of the post can delete the post
+    # A post request in this view means: create, delete or edit a post 
     def post(self, request):
         if not request.user.is_authenticated:
             return redirect(reverse('members:login'))
-        # User wants to create a post 
         post_id = self.request.POST.get("post_id")
+        
+        # User wants to create a post 
         if not post_id:
             return redirect(reverse('posts:post_creation'))
+       
         
         blog_post = Post.objects.get(pk=post_id)
         if blog_post:
+            # User wants to delete a post
             if blog_post.status == 1 and blog_post.author == request.user:
                 blog_post.delete()
                 return redirect(reverse('posts:post_list'))
+            # User wants to edit a post
             if blog_post.status == 0 and blog_post.author == request.user:
                 return redirect(reverse('posts:post_edition', kwargs={'slug': blog_post.slug}))
         
