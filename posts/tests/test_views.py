@@ -202,14 +202,30 @@ class TestPostDetailView(TestPostsAppViews):
 
 class TestPostCreationView(TestPostsAppViews):
 
-    def test_authenticated_user_can_create_post(self):
-        pass
+    def test_authenticated_user_can_access_create_post(self):
+        response = self.visitor_client.get(reverse('posts:post_creation'))
+        self.assertTrue(response.status_code, 200)
 
-    def test_anonymous_user_cant_create_post(self):
-        pass
+    def test_anonymous_user_cant_access_create_post(self):
+        response = self.anonymous_client.post(reverse('posts:post_creation'))
+        self.assertTrue(response.status_code, 403)
+
+    def test_authenticated_user_can_create_post(self):
+        post = PostFactory(
+                author = self.visitor_user
+                )
+        response = self.visitor_client.post(reverse('posts:post_creation'), kwargs={'content': post}) 
+        self.assertTrue(response.status_code, 200)
+        self.assertTrue(Post.objects.get(pk=post.pk))
 
     def test_author_automatically_added_to_post_on_creation(self):
-        pass
+        post = PostFactory(
+                author = self.visitor_user
+                )
+        response = self.visitor_client.post(reverse('posts:post_creation'), kwargs={'content': post}) 
+        self.assertTrue(response.status_code, 200)
+        self.assertTrue(Post.objects.get(pk=post.pk))
+        self.assertTrue(Post.objects.get(pk=post.pk).author, self.visitor_user)
 
 class TestPostUpdateView(TestPostsAppViews):
 
