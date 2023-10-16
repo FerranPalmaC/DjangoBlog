@@ -1,10 +1,13 @@
+import time
 import datetime
+from django.http import response
 from django.test import Client, TestCase
 from django.utils import timezone
 from posts.tests.factories import CommentFactory, PostFactory
 from members.tests.factories import CustomUserFactory
 from django.urls import reverse
 from posts.models import Post, Comment
+from django.db.models import Count, Q 
 
 
 class TestPostsAppViews(TestCase):
@@ -60,6 +63,10 @@ class TestPostsAppViews(TestCase):
         cls.old_comment = CommentFactory(
                 author=cls.visitor_user,
                 post=cls.old_published_post
+                )
+        cls.random_comment = CommentFactory(
+                author=cls.visitor_user,
+                post=cls.published_post
                 )
         # Get querysets
         cls.qs_published_posts = Post.objects.filter(status=1).order_by('-publication_date')
@@ -133,47 +140,65 @@ class TestPostListView(TestPostsAppViews):
 class TestPostDetailView(TestPostsAppViews):
     
     def test_published_post_has_detail_for_authenticated_user(self):
-        pass
+        response = self.main_client.get(self.published_post.get_absolute_url())
+        self.assertTrue(response.status_code, 200)
+        self.assertTrue(response.context['post'], self.published_post)
 
     def test_published_post_has_detail_for_anonymous_user(self):
-        pass
-
-    def test_updated_post_have_last_updated_info(self):
-        pass
-
-    def test_non_updated_posts_have_not_last_updated_info(self):
-        pass
-
-    def test_comments_are_shown_for_authenticated_user(self):
-        pass
-
-    def test_comments_are_shown_for_anonymous_user(self):
-        pass
-
-    def test_no_comments_correctly_shown_for_authenticated_user(self):
-        pass
-
-    def test_no_comments_correctly_shown_for_anonymoys_user(self):
-        pass
+        response = self.anonymous_client.get(self.published_post.get_absolute_url())
+        self.assertTrue(response.status_code, 200)
+        self.assertTrue(response.context['post'], self.published_post)
 
     def test_authenticated_user_can_comment(self):
-        pass
+        comment_content = "this is my comment content."
+        response = self.visitor_client.post(
+                self.published_post.get_absolute_url(),
+                {'content': comment_content}
+                )
+        self.assertEqual(response.status_code, 302)
+        post_comments = Comment.objects.filter(post=self.published_post, content=comment_content)
+        self.assertTrue(post_comments.exists()) 
 
     def test_anonymous_user_cant_comment(self):
-        pass
+        comment_content = "this is my anonymous comment content."
+        with self.assertRaises(ValueError):
+            response = self.anonymous_client.post(
+                    self.published_post.get_absolute_url(),
+                    {'content': comment_content}
+                    )
+            self.assertEqual(response.status_code, 302)
+            post_comments = Comment.objects.filter(post=self.published_post, content=comment_content)
+            self.assertFalse(post_comments.exists()) 
 
     def test_author_of_post_can_delete_all_comments(self):
-        pass
+        others_post_comments = Comment.objects.filter(post__pk=self.published_post.pk).exclude(author=self.main_user)[0]
+        response = self.main_client.post(self.published_post.get_absolute_url(), {'comment_id': others_post_comments.pk})
+        self.assertTrue(response.status_code, 302)
+        self.assertFalse(Comment.objects.filter(post__pk=self.published_post.pk, pk=others_post_comments.pk).exists())
 
     def test_not_author_of_post_cant_delete_all_comments(self):
-        pass
+        others_post_comments = Comment.objects.filter(post__pk=self.published_post.pk).exclude(author=self.visitor_user)
+        response = self.visitor_client.post(self.published_post.get_absolute_url(), {'comment_id': others_post_comments[0].pk})
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(Comment.objects.get(pk=others_post_comments[0].pk)) 
 
     def test_non_author_of_post_can_delete_his_comments(self):
-        pass
+        own_comment = Comment.objects.filter(post__pk=self.published_post.pk, author__pk=self.visitor_user.pk)[0]
+        response = self.visitor_client.post(self.published_post.get_absolute_url(), {'comment_id': own_comment.pk})
+        self.assertTrue(response.status_code, 302)
+        self.assertFalse(Comment.objects.filter(pk=own_comment.pk).exists())
 
     def test_anonymous_user_cant_delete_comments(self):
-        pass
-
+        comment_id = Comment.objects.all()[0].pk
+        previous_comments = Comment.objects.filter(post__pk=self.published_post.pk).count()
+        with self.assertRaises(ValueError):
+            response = self.anonymous_client.post(
+                    self.published_post.get_absolute_url(),
+                    {'comment_id': comment_id}
+                    )
+            self.assertEqual(response.status_code, 403)
+            posterior_comments = Comment.objects.filter(post__pk=self.published_post.pk).count()
+            self.assertEqual(previous_comments, posterior_comments)
 
 class TestPostCreationView(TestPostsAppViews):
 
