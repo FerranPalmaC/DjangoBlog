@@ -105,6 +105,12 @@ class PostCreationView(LoginRequiredMixin, generic.CreateView):
     template_name = 'posts/post_creation.html'
     form_class = CreatePostForm
 
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden()
+        return super().post(request, *args, **kwargs)
+
+
     # Auto assign the user creating the post as the author of the post
     def form_valid(self, form):
         if not Post.objects.filter(pk = form.instance.pk).exists():
