@@ -89,14 +89,15 @@ class CommentCreationView(SingleObjectMixin, generic.FormView):
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return HttpResponseForbidden
-
+        
         if comment_id := self.request.POST.get("comment_id"):
             comment = Comment.objects.get(pk=comment_id)
             post = Post.objects.get(comments__id=comment_id)
             if request.user == comment.author or request.user == post.author:
                 comment.delete()
                 return redirect(reverse('posts:post_detail', kwargs={'slug': post.slug}))
-
+            else:
+                return HttpResponseForbidden()
         return super().post(request, *args, **kwargs)
 
 class PostCreationView(LoginRequiredMixin, generic.CreateView):
