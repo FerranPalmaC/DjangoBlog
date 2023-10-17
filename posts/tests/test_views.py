@@ -1,15 +1,10 @@
-import time
 import datetime
-from django.http import response
-from django.template.defaultfilters import slugify
 from django.test import Client, TestCase
 from django.utils import timezone
-from posts.forms import CreatePostForm
 from posts.tests.factories import CommentFactory, PostFactory
 from members.tests.factories import CustomUserFactory
 from django.urls import reverse
 from posts.models import Post, Comment
-from django.db.models import Count, Q 
 
 
 class TestPostsAppViews(TestCase):
@@ -41,6 +36,12 @@ class TestPostsAppViews(TestCase):
                 author = cls.main_user,
                 status=1)
         cls.drafted_post= PostFactory(
+                author = cls.main_user,
+                creation_date=timezone.now() - datetime.timedelta(days=2), 
+                publication_date=timezone.now() - datetime.timedelta(days=1), 
+                updated_on = timezone.now() + datetime.timedelta(days=3)
+                )
+        cls.other_drafted_post = PostFactory(
                 author = cls.main_user,
                 creation_date=timezone.now() - datetime.timedelta(days=2), 
                 publication_date=timezone.now() - datetime.timedelta(days=1), 
@@ -238,25 +239,78 @@ class TestPostCreationView(TestPostsAppViews):
 class TestPostUpdateView(TestPostsAppViews):
 
     def test_author_can_update_post(self):
-        pass
+        response =  self.main_client.get(reverse('posts:post_edition', kwargs={'slug': self.published_post.slug}))
+        self.assertEqual(response.status_code, 200)
 
     def test_not_author_cant_update_post(self):
-        pass
-
+        response = self.visitor_client.get(reverse('posts:post_edition', kwargs={'slug': self.published_post.slug}))
+        self.assertEqual(response.status_code, 403)
+            
     def test_update_from_draft_to_published(self):
-        pass
+       updated_post_data = {
+            'title': self.drafted_post.title,
+            'content': self.drafted_post.content,
+            'status': 1
+       }
+       response = self.main_client.post(reverse('posts:post_edition', kwargs={'slug': self.drafted_post.slug}), updated_post_data)
+       self.drafted_post.refresh_from_db()
+       self.assertEqual(response.status_code, 302)
+       self.assertTrue(self.drafted_post.status, 1)
 
     def test_cant_update_from_published_to_draft(self):
-        pass
+       updated_post_data = {
+            'title': self.drafted_post.title,
+            'content': self.drafted_post.content,
+            'status': 0 
+       }
+       response = self.main_client.post(reverse('posts:post_edition', kwargs={'slug': self.drafted_post.slug}), updated_post_data)
+       self.drafted_post.refresh_from_db()
+       self.assertEqual(response.status_code, 302)
+       self.assertFalse(self.drafted_post.status, 0)
 
     def test_title_can_change_in_drafted_post(self):
-        pass
+       updated_post_data = {
+            'title': 'Updated post title',
+            'content': self.other_drafted_post.content,
+            'status': self.other_drafted_post.status 
+       }
+       response = self.main_client.post(reverse('posts:post_edition', kwargs={'slug': self.other_drafted_post.slug}), updated_post_data)
+       self.other_drafted_post.refresh_from_db()
+       self.assertEqual(response.status_code, 302)
+       self.assertEqual(self.other_drafted_post.title, updated_post_data['title'])
 
-    def test_title_cant_change_in_drafted_post(self):
-        pass
+    def test_title_cant_change_in_published_post(self):
+       updated_post_data = {
+            'title': 'Updated post title',
+            'content': self.old_published_post.content,
+            'status': self.old_published_post.status 
+       }
+       response = self.main_client.post(reverse('posts:post_edition', kwargs={'slug': self.old_published_post.slug}), updated_post_data)
+       self.old_published_post.refresh_from_db()
+       self.assertEqual(response.status_code, 302)
+       self.assertNotEqual(self.old_published_post.title, updated_post_data['title'])
 
+    def test_content_can_change_in_drafted_post(self):
+       updated_post_data = {
+            'title': self.other_drafted_post.title,
+            'content': "The new content of the post",
+            'status': self.other_drafted_post.status 
+       }
+       response = self.main_client.post(reverse('posts:post_edition', kwargs={'slug': self.other_drafted_post.slug}), updated_post_data)
+       self.other_drafted_post.refresh_from_db()
+       self.assertEqual(response.status_code, 302)
+       self.assertEqual(self.other_drafted_post.content, updated_post_data['content'])
 
-
+    def test_content_can_change_in_published_post(self):
+       updated_post_data = {
+            'title': self.published_post.title,
+            'content': "The new content of the post",
+            'status': self.published_post.status 
+       }
+       response = self.main_client.post(reverse('posts:post_edition', kwargs={'slug': self.published_post.slug}), updated_post_data)
+       self.published_post.refresh_from_db()
+       self.assertEqual(response.status_code, 302)
+       self.assertEqual(self.published_post.content, updated_post_data['content'])
 
 
 
