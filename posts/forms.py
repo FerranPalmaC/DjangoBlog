@@ -15,12 +15,11 @@ class UpdatePostForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         instance = kwargs.get('instance')
         if instance and instance.status == 1:
-            self.fields['title'].widget.attrs['readonly'] = True
+            self.fields['title'].disabled = True
             self.fields['status'].disabled = True
 
+
 class CreateCommentForm(forms.ModelForm):
-    content = forms.CharField(required=True)
-    
     class Meta:
         model = Comment
         fields = ['content',]

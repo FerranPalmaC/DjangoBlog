@@ -128,4 +128,4 @@ class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
         if post.author == self.request.user:
             return super().dispatch(request, *args, **kwargs)
 
-        return redirect(reverse('posts:post_list')) 
+        return HttpResponseForbidden() 
