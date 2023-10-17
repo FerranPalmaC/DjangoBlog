@@ -1,8 +1,10 @@
 import time
 import datetime
 from django.http import response
+from django.template.defaultfilters import slugify
 from django.test import Client, TestCase
 from django.utils import timezone
+from posts.forms import CreatePostForm
 from posts.tests.factories import CommentFactory, PostFactory
 from members.tests.factories import CustomUserFactory
 from django.urls import reverse
@@ -211,21 +213,27 @@ class TestPostCreationView(TestPostsAppViews):
         self.assertTrue(response.status_code, 403)
 
     def test_authenticated_user_can_create_post(self):
-        post = PostFactory(
-                author = self.visitor_user
-                )
-        response = self.visitor_client.post(reverse('posts:post_creation'), kwargs={'content': post}) 
-        self.assertTrue(response.status_code, 200)
-        self.assertTrue(Post.objects.get(pk=post.pk))
+        post_data = {
+            'title': 'Test Post',
+            'content': 'This is a test post content.',
+            'status': 1  
+        }
+        response = self.visitor_client.post(reverse('posts:post_creation'), post_data)
+        self.assertEqual(response.status_code, 302)
+        created_post = Post.objects.filter(author=self.visitor_user, title='Test Post', content='This is a test post content.')
+        self.assertTrue(created_post.exists())
 
     def test_author_automatically_added_to_post_on_creation(self):
-        post = PostFactory(
-                author = self.visitor_user
-                )
-        response = self.visitor_client.post(reverse('posts:post_creation'), kwargs={'content': post}) 
-        self.assertTrue(response.status_code, 200)
-        self.assertTrue(Post.objects.get(pk=post.pk))
-        self.assertTrue(Post.objects.get(pk=post.pk).author, self.visitor_user)
+        post_data = {
+            'title': 'Test Post',
+            'content': 'This is a test post content.',
+            'status': 1  
+        }
+        response = self.visitor_client.post(reverse('posts:post_creation'), post_data)
+        self.assertEqual(response.status_code, 302)
+        created_post = Post.objects.get(author=self.visitor_user, title='Test Post', content='This is a test post content.')
+        self.assertTrue(created_post)
+        self.assertEqual(created_post.author, self.visitor_user)
 
 class TestPostUpdateView(TestPostsAppViews):
 
